@@ -3,32 +3,43 @@ package labs.oop_review;
 import java.util.Scanner;
 
 public class AnimalProgram {
+
     public static void main(String[] args) {
-        String animalType1;
-        String animalType1name = "capybara";
-        String animalType1FoodBehavior = "herbivore";
-        String animalType1Sound = "Squeak";
+        Scanner scanner = new Scanner(System.in);
 
-        String animalType2;
-        String animalType2name = "lion";
-        String animalType2FoodBehavior = "carnivore";
-        String animalType2Sound = "Roar!!";
-        Scanner scnr = new Scanner(System.in);
-        
-        System.out.println("Enter two kinds of animals you want to know about:");
-        animalType1 = scnr.nextLine();
-        animalType2 = scnr.nextLine();
+        Animal[] animals = {
+            new Capybara(),
+            new Lion(),
+            new Alligator(),
+            new Hawk()
+        };
 
-        if (animalType1.equals("capybara")) {
-            System.out.println("Capybaras are a kind of " + animalType1FoodBehavior);
-            System.out.println("They make a " + animalType1Sound);
+        System.out.println("Welcome to the Animal Information Program!");
+        System.out.println("Available animals: capybara, lion, alligator, and hawk");
+        System.out.print("Enter an animal name: ");
+
+        String animalName = scanner.nextLine().trim();
+        Animal selectedAnimal = findAnimal(animals, animalName);
+
+        if (selectedAnimal != null) {
+            System.out.println(selectedAnimal.getName() + " is a "
+                    + selectedAnimal.getDiet().getType() + ".");
+            System.out.println("It makes a "
+                    + selectedAnimal.makeSound() + " sound.");
+        } else {
+            System.out.println("Sorry, that animal is not available.");
         }
 
-        if (animalType2.equals("lion")) {
-            System.out.println("Lions are a kind of" + animalType2FoodBehavior);
-            System.out.println("They make a " + animalType2Sound);
+        scanner.close();
+    }
+
+    private static Animal findAnimal(Animal[] animals, String animalName) {
+        for (Animal animal : animals) {
+            if (animal.getName().equalsIgnoreCase(animalName)) {
+                return animal;
+            }
         }
 
-        //TODO: Add Alligator and Hawk
+        return null;
     }
 }

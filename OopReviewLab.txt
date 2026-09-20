@@ -1,0 +1,32 @@
+OOP Review Lab
+
+Issues in the Original Code
+
+1. All animal information and program logic were placed inside the main method.
+2. The code did not use classes, inheritance, composition, or polymorphism.
+3. Animal information was stored in repeated String variables.
+4. Some variables, such as animalType1name and animalType2name, were never used.
+5. The first input only checked for a capybara, while the second only checked for a lion.
+6. The input was case-sensitive and did not remove extra spaces.
+7. The lion output was missing a space before the word carnivore.
+8. The program did not give feedback for an unavailable animal.
+9. The Scanner was not closed.
+10. The Alligator and Hawk TODO was not implemented.
+
+Refactored Design
+
+Animal is the parent class and stores a private name and Diet.
+Diet is contained inside Animal, which demonstrates composition.
+Capybara, Lion, Alligator, and Hawk inherit from Animal.
+Each animal overrides makeSound, which demonstrates polymorphism.
+AnimalProgram stores the different animals in an Animal array and searches
+for the animal entered by the user.
+
+Pseudocode
+
+Create the available animal objects.
+Display the available animals.
+Ask the user to enter an animal name.
+Search the animal array for a matching name.
+If the animal is found, display its diet type and sound.
+Otherwise, tell the user that the animal is unavailable.
