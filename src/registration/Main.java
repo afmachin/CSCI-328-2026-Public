@@ -37,7 +37,7 @@ public class Main {
                      .map(o -> o.getCourse().getCode()).toArray()));
 
         Roster roster = new Roster("10422", 2);
-        roster.getStudents().put(alice.getId(), alice);
+        roster.addStudent(alice);;
         System.out.println();
         System.out.print(service.formatRosterForAdvising(roster));
     }

@@ -1,0 +1,23 @@
+Before Refactoring
+
+Nothing in Roster currently enforces its capacity. The capacity field only stores a number, while callers can add any number of students by changing the map returned by getStudents().
+
+Issues in Roster
+
+Roster exposes its mutable students map through getStudents(), and setStudents() lets callers replace the entire map. The setters also let callers change important roster data without Roster checking whether the new state is valid.
+
+Main Update
+
+Line 40 of the original Main breaks:
+roster.getStudents().put(alice.getId(), alice);
+
+That line now throws an UnsupportedOperationException at runtime because getStudents() returns an unmodifiable map, so code outside Roster cannot add students directly.
+
+I changed that line to:
+roster.addStudent(alice);
+
+This makes Roster responsible for adding the student and checking its capacity first.
+
+Cost
+
+The improvement changes Roster's public API and gives callers less flexibility. Existing code that changed or replaced the map must be rewritten to use addStudent(), and callers should now handle the false result when the roster is full.
