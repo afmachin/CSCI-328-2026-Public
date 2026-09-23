@@ -1,0 +1,88 @@
+Invariants Harness - findings and evaluation
+
+I ran:
+  javac -d invariants-build src/registration/*.java
+  java -cp invariants-build registration.Check
+
+Fixture:
+Crowded is CS101 (CRN 10001), worth 3 credits, with capacity 2.
+Routine is ENG101 (CRN 10002), worth 3 credits, with capacity 2.
+The students are Alice (S001), Ben (S002), and Cara (S003).
+The configured max_credits is 18.
+
+Exact sequence of calls in Check.main:
+  1. service.register(alice, crowded);  // true
+  2. service.register(alice, crowded);  // true
+  3. service.register(alice, crowded);  // false; waitlisted
+  4. service.register(alice, crowded);  // false; waitlisted again
+  5. service.register(ben, routine);    // true
+  6. service.register(cara, routine);   // true
+  7. service.drop(ben, routine);
+  8. service.drop(cara, routine);
+
+Violation 1 - enrollment count:
+Calls 1 and 2 cause this violation. Registering Alice a second time succeeds.
+Her enrollment list then contains crowded twice, and the offering's count is
+2, even though only one distinct student has the offering.
+
+Output from the run:
+  1. Enrollment counts:
+    - Offering 10001: enrolled count is 2, but 1 distinct student(s) are enrolled.
+
+To prevent this state, the duplicate check must be in the operation that
+actually adds an enrollment. Checking only in Check.java would just report
+the problem. CourseOffering should own its enrolled students, with the
+enrolled count calculated from that collection. Callers should not be able
+to change Student's enrollment list or the offering's count separately.
+
+Violation 2 - waitlist:
+Calls 1 and 2 fill crowded. Calls 3 and 4 then add Alice to its waitlist
+twice, although she is already enrolled. These are normal calls to
+RegistrationService.register; no fields were changed directly.
+
+Output from the run:
+  3. Waitlists:
+    - Offering 10001 waitlist: student S001 appears more than once.
+    - Offering 10001 waitlist: student S001 is already enrolled.
+
+The check must be where a student is added to the waitlist. That operation
+needs to know both the waitlist and who is already enrolled. Right now
+WaitlistManager.add only receives a CRN and student ID, so it cannot make
+the full decision. CourseOffering could own both enrolled membership and
+the waitlist and permit only valid changes between them.
+
+The other two checks printed:
+  2. Credit limits:
+    none
+  4. Capacity:
+    none
+
+The fixture fails two invariant claims (1 and 3). Claim 3 produces two
+messages. No message for claims 2 and 4 only means this fixture did not
+break them.
+
+Which claims could be made structurally impossible?
+For claim 1, keep one set of enrolled student IDs per offering and derive
+the count from its size. For claim 3, keep one status per student/offering
+pair, so a student cannot be both enrolled and waitlisted or have two
+waitlist entries. For claim 4, the offering could own fixed capacity slots
+and only fill an empty slot. Any capacity change would also have to
+respect the number of occupied slots.
+
+Which claim cannot be solved by data structure alone?
+Claim 2 depends on the total credits across a student's courses and the
+configured max_credits. A set or list cannot enforce that sum by itself.
+Enrollment changes need a credit check, and changing a course's credits
+or the configured limit must also be controlled or validated.
+
+What does needing this harness tell us?
+Several registration decisions were not hidden behind one owner.
+Student.getCurrentEnrollments returns a writable list, and Student.enroll
+and setCurrentEnrollments can change membership directly.
+CourseOffering.setEnrolled and setCapacity can change the count and limit.
+WaitlistManager.add accepts repeated IDs, while getByOffering exposes its
+writable map. Course.setCredits and the public Config.settings map can
+change the values used in the credit rule. RegistrationService.drop even
+decrements enrolled without checking whether the student was removed.
+The harness has to compare these separate pieces of state because the
+classes currently allow them to disagree.
