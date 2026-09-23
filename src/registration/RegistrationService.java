@@ -75,6 +75,12 @@ public class RegistrationService {
             return false;
         }
 
+        if (student instanceof GraduateStudent
+                && !((GraduateStudent) student).hasAdvisorApproval()) {
+            lastErrors.add("Graduate students require advisor approval before enrolling");
+            return false;
+        }
+
         student.enroll(offering);
         audit.record("ENROLLED", student.getId() + " -> " + offering.getCrn());
         notifications.send(student.getId(), "Enrollment confirmed",

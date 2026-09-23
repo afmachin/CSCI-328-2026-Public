@@ -1,0 +1,33 @@
+GraduateStudent evaluation
+
+Two Liskov violations in GraduateStudent.enroll:
+
+1. Stronger precondition: Student.enroll accepts a non-null offering without
+requiring advisor approval. GraduateStudent.enroll requires approval first,
+so the subtype accepts fewer calls than the parent method.
+
+2. Weaker postcondition and broader failure behavior: Student.enroll adds
+the offering to the student's enrollments and increases its enrolled count.
+Without approval, the override throws IllegalStateException and does neither.
+A caller using a Student reference can no longer rely on the parent's
+normal result for that call.
+
+Advisor approval is a real registration rule. It belongs in
+RegistrationService.register, alongside the other eligibility checks, just
+before the service calls student.enroll. The service can then return false
+and explain the rejection through lastErrors. Once these rules are in the
+registration flow, they could be moved into a separate enrollment policy
+instead of adding more enrollment overrides to student subclasses.
+
+Changes made: I removed the enroll override from GraduateStudent but kept
+its approval field and accessors. I added an approval check in
+RegistrationService before enrollment changes occur. Approved graduate
+students still use Student.enroll. A full section can still put a graduate
+student on the waitlist, as it could before this change.
+
+Improvement cost: RegistrationService now checks for GraduateStudent
+specifically. More student types could make that service harder to maintain
+unless the rules move into a policy. Also, callers can still bypass the
+service by calling the public Student.enroll method or changing its exposed
+enrollment list. Preventing that would require restricting those mutation
+paths and updating their callers, which is a larger refactor.
