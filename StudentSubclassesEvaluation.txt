@@ -1,0 +1,95 @@
+Student subclasses evaluation
+
+ExchangeStudent
+Output:
+ExchangeStudent
+getId=2026FA-E001
+registered=false
+errors=[Missing prerequisite: CS101]
+
+Broken promise: Student.getId returns the ID used to find the student's
+records. ExchangeStudent adds a term prefix, so register looks for grades
+under 2026FA-E001 instead of E001. It incorrectly says CS101 is missing.
+
+VisitingStudent
+Output:
+VisitingStudent
+[audit] ENROLLED :: V001 -> 20002
+[notify] V001 | Enrollment confirmed | You are enrolled in ART101.
+registered=true
+before drop: enrollments=1, seats used=1
+[audit] DROPPED :: V001 -> 20002
+after drop: enrollments=1, seats used=0
+
+Broken promise: Student.getCurrentEnrollments returns the list that the
+service changes when dropping a course. VisitingStudent returns a copy.
+The service removes the course from that copy, leaving the student enrolled
+even though it decreases the offering's seat count.
+
+ProvisionalStudent
+Output:
+ProvisionalStudent
+[audit] ENROLLED :: P001 -> 20003
+[notify] P001 | Enrollment confirmed | You are enrolled in ART101.
+registered=true
+current enrollments=0, pending=1, seats used=0
+
+Broken promise: Student.enroll adds a current enrollment and increases the
+offering's enrolled count. ProvisionalStudent only adds to a pending list.
+The service reports a confirmed enrollment that did not happen.
+
+Sealed Student compiler output:
+src\registration\ExchangeStudent.java:5: error: class is not allowed to extend sealed class: Student (as it is not listed in its permits clause)
+public class ExchangeStudent extends Student {
+       ^
+src\registration\ProvisionalStudent.java:8: error: class is not allowed to extend sealed class: Student (as it is not listed in its permits clause)
+public class ProvisionalStudent extends Student {
+       ^
+src\registration\VisitingStudent.java:8: error: class is not allowed to extend sealed class: Student (as it is not listed in its permits clause)
+public class VisitingStudent extends Student {
+       ^
+3 errors
+
+Final Student compiler output:
+src\registration\ExchangeStudent.java:5: error: cannot inherit from final Student
+public class ExchangeStudent extends Student {
+                                     ^
+src\registration\GraduateStudent.java:3: error: cannot inherit from final Student
+public class GraduateStudent extends Student {
+                                     ^
+src\registration\ProvisionalStudent.java:8: error: cannot inherit from final Student
+public class ProvisionalStudent extends Student {
+                                        ^
+src\registration\VisitingStudent.java:8: error: cannot inherit from final Student
+public class VisitingStudent extends Student {
+                                     ^
+4 errors
+
+Cost and compatibility:
+Sealing Student allows GraduateStudent because it is listed in permits,
+but adding another direct subclass would require changing Student's
+permits list. The three demonstration subclasses cannot compile under
+this particular seal. Making Student final prevents all subclasses. It
+cannot work with the current codebase because GraduateStudent already
+extends Student.
+
+Compiler checks:
+With a sealed class, the compiler checks that direct subclasses are
+permitted and that a permitted subclass is declared final, sealed, or
+non-sealed. This check is useful if we deliberately want a closed set of
+student subclasses. It does not check whether their methods keep
+Student's behavioral promises.
+
+RegistrationService and the needed stand-in:
+RegistrationService.register asks Student for its ID to fetch grade rows
+from LegacySisClient. It should check completed courses and prerequisites
+using transcript data instead. If the transcript is loaded before
+registration, register would not need to look up SIS grades using the
+student ID. Student already holds a list of TranscriptEntry objects, so
+that is where the student's transcript data belongs.
+
+Sealing Student does not block the stand-in we actually need for this
+external dependency. The service reaches into LegacySisClient for grade
+rows. We could give the service a replaceable records-source interface,
+using a fake source in tests and an SIS-backed source in production. That
+fake would stand in for the records system, not for Student.
