@@ -10,10 +10,8 @@ public class Main {
         sis.seed("S002", "CS101", "F", "2025FA");
 
         Course cs101 = new Course("CS101", "Intro to Programming", 4);
-        Course cs201 = new Course("CS201", "Data Structures", 4);
-        cs201.getPrerequisites().add("CS101");
-        Course cs301 = new Course("CS301", "Object Oriented Design", 3);
-        cs301.getPrerequisites().add("CS201");
+        Course cs201 = new Course("CS201", "Data Structures", 4, Arrays.asList("CS101"));
+        Course cs301 = new Course("CS301", "Object Oriented Design", 3, Arrays.asList("CS201"));
 
         CourseOffering ds = new CourseOffering("10422", cs201, 2);
         ds.getMeetings().add(new MeetingTime("MON", 540, 630));
