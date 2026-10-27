@@ -1,0 +1,67 @@
+Recorded output of two consecutive runs on the machine this course was built on
+(2 cores visible to the JVM, OpenJDK 21). Your numbers will differ. The point is
+the pattern, not the figures: parts one to three fail, part four does not, and the
+size of the failure is not stable. An earlier run of this identical program on this
+identical machine lost 6,165 of the 8,000 increments in part one. A defect this
+variable is a defect you cannot test your way to.
+
+$ cd reference/demos/race
+$ javac RaceDemo.java && java RaceDemo
+
+--- run 1 -------------------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: 
+cores available to this JVM: 2
+trials per section: 20000
+
+== part one: the mechanism (lost updates) ==
+Eight threads enrol one student each, 1000 times over, into a
+section with room for everyone. The only correct answer is 8000.
+expected enrolled = 8000
+actual enrolled   = 7501
+increments lost   = 499
+
+== part two: the last seat, as the codebase has it ==
+capacity 20, 19 already enrolled, two students registering at once.
+EligibilityChecker reads hasOpenSeats(); Student.enroll does the write.
+trials where enrolled exceeded capacity = 311 of 20000
+highest enrolled count observed         = 21
+
+== part three: synchronized on the wrong thing ==
+Student.enroll is now synchronized. The check is still outside it.
+trials where enrolled exceeded capacity = 315 of 20000
+highest enrolled count observed         = 21
+
+== part four: one owner ==
+CourseOffering.claimSeat() checks and writes under its own lock,
+and nothing outside CourseOffering writes the count at all.
+trials where enrolled exceeded capacity = 0 of 20000
+registrations refused for a full section = 20000   (one per trial is the correct answer: 20000)
+
+--- run 2, same command, nothing changed ------------------------------------
+Picked up JAVA_TOOL_OPTIONS: 
+cores available to this JVM: 2
+trials per section: 20000
+
+== part one: the mechanism (lost updates) ==
+Eight threads enrol one student each, 1000 times over, into a
+section with room for everyone. The only correct answer is 8000.
+expected enrolled = 8000
+actual enrolled   = 7945
+increments lost   = 55
+
+== part two: the last seat, as the codebase has it ==
+capacity 20, 19 already enrolled, two students registering at once.
+EligibilityChecker reads hasOpenSeats(); Student.enroll does the write.
+trials where enrolled exceeded capacity = 302 of 20000
+highest enrolled count observed         = 21
+
+== part three: synchronized on the wrong thing ==
+Student.enroll is now synchronized. The check is still outside it.
+trials where enrolled exceeded capacity = 371 of 20000
+highest enrolled count observed         = 21
+
+== part four: one owner ==
+CourseOffering.claimSeat() checks and writes under its own lock,
+and nothing outside CourseOffering writes the count at all.
+trials where enrolled exceeded capacity = 0 of 20000
+registrations refused for a full section = 20000   (one per trial is the correct answer: 20000)

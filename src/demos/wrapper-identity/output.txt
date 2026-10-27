@@ -1,0 +1,40 @@
+== part one: identity ==
+wrapped == rule                       -> false
+wrapped.getClass().getSimpleName()    -> AuditedRule
+rule.getClass().getSimpleName()       -> CreditLimitRule
+wrapped instanceof CreditLimitRule    -> false
+
+The last line is the one that breaks working code: something wanted to
+skip credit rules for graduate students, and the check now says no.
+
+== part two: equality ==
+w1 == w2                 -> false
+w1.equals(w2)            -> true    records: equal contents, equal wrappers
+w1.equals(rule)          -> false
+rule.equals(w1)          -> false
+
+Both of those last two are false, in both directions. That is ordinary
+inequality, not the symmetry break note 03 warned about: a wrapper is
+simply not the thing it wraps. The consequence is still real --
+set containing the rule and its wrapper -> size 2   (one rule, two entries)
+
+== part three: four wrappers, one stack trace ==
+assembled as: Retried( Timed( Cached( Audited( CreditLimitRule ))))
+
+   at WrapperDemo$CreditLimitRule.evaluate(WrapperDemo.java:23)
+   at WrapperDemo$AuditedRule.evaluate(WrapperDemo.java:28)
+   at WrapperDemo$CachedRule.evaluate(WrapperDemo.java:34)
+   at WrapperDemo$TimedRule.evaluate(WrapperDemo.java:31)
+   at WrapperDemo$RetriedRule.evaluate(WrapperDemo.java:37)
+   at WrapperDemo.partThree(WrapperDemo.java:99)
+   at WrapperDemo.main(WrapperDemo.java:45)
+
+Four wrapper frames sit between main and the work, every one of them
+named `evaluate`. And the trace runs inside-out, which is the reverse
+of how you read the expression: you wrote Retried first, and it is the
+last wrapper in the trace, just above main. Audited is the one you
+wrote last and it reports first, because it is nearest the work.
+
+Nothing in the trace tells you which layer cached, which timed or which
+retried. Only the file names do, and they are named for concerns rather
+than for rules.

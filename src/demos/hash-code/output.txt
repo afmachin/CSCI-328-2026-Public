@@ -1,0 +1,11 @@
+== part one: the mechanism ==
+a.equals(b)     = true
+same hash code? = false
+set.size()      = 2
+set.contains(c) = false
+
+== part two: your own codebase ==
+a.equals(b)                                   = true
+a.hashCode() == b.hashCode()                  = false
+distinct slots in the combined week           = 2   (advisor expects 1)
+week.contains(new MeetingTime("MON",540,630)) = false

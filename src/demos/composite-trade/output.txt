@@ -1,0 +1,11 @@
+-- safe design, the same client loop as the transparent one --
+before: Group[CourseReq[code=CS201], Group[CourseReq[code=MATH150]]]
+after : Group[CourseReq[code=CS201], Group[CourseReq[code=MATH150], CourseReq[code=CS101]], CourseReq[code=CS101]]
+groups found: 2; nothing threw, and the client needed two
+instanceof branches it did not need in the transparent version.
+
+-- sealed design: there is no add, so adding rebuilds the path --
+before: AllOf[parts=[Course[code=CS201], AllOf[parts=[Course[code=MATH150]]]]]
+after : AllOf[parts=[Course[code=CS201], AllOf[parts=[Course[code=MATH150], Course[code=CS101]]]]]
+original unchanged: AllOf[parts=[Course[code=CS201], AllOf[parts=[Course[code=MATH150]]]]]
+satisfiedBy still reads in one switch; editing took a whole function.

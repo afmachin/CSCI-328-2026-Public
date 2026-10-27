@@ -1,0 +1,9 @@
+$ javac NoFunctionTypes.java
+NoFunctionTypes.java:18: error: incompatible types: WaitlistPolicy cannot be converted to Priority
+        Priority priority = policy;              // (1) same shape, so surely interchangeable?
+                            ^
+NoFunctionTypes.java:23: error: cannot infer type for local variable ranker
+        var ranker = (String id) -> id.length();  // (2) what type is this, on its own?
+            ^
+  (lambda expression needs an explicit target-type)
+2 errors

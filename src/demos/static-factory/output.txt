@@ -1,0 +1,40 @@
+== part one: names ==
+Credits.earned(12)    -> Credits[value=12]
+Credits.attempted(12) -> Credits[value=12]
+
+As constructors these two do not compile. Both take one int, so
+the compiler has no way to tell them apart:
+    error: constructor Credits(int) is already defined in class Credits
+
+== part two: an instance that already exists ==
+closed()    -> EnrollmentWindow[0..0]
+immediate() -> EnrollmentWindow[0..3600]
+
+closed() == closed()       -> true    one shared instance
+immediate() == immediate() -> false   a new one each time
+
+`new` is defined to produce a fresh object every time, so a
+constructor cannot do the first line. Only the factory can choose.
+
+== part three: a subtype you cannot name ==
+creditLimit(18).describe() -> at most 18 credits
+declared type              -> EligibilityRule
+actual class               -> CreditLimitRule
+
+The JDK does this to you constantly:
+List.of(1, 2)              -> [1, 2]
+its class                  -> List12   (a JDK-internal type for one- and two-element lists)
+
+You cannot write that name, cannot extend it, and it can be
+replaced in the next release without breaking your code.
+
+== part four: the one in the JDK you have already used ==
+Integer.valueOf(127) == Integer.valueOf(127) -> true
+Integer.valueOf(128) == Integer.valueOf(128) -> false
+
+valueOf caches -128 to 127 and allocates above it. A constructor
+could not return true on the first line at all, which is why
+new Integer(int) is deprecated for removal and valueOf is not.
+
+Caching is only safe because Integer is immutable. Share a mutable
+object between callers and each one is editing everyone else's.

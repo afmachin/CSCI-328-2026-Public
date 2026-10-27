@@ -1,0 +1,5 @@
+$ javac AdapterNotAssignable.java
+AdapterNotAssignable.java:36: error: incompatible types: LegacySisClient cannot be converted to TranscriptSource
+        TranscriptSource notAnAdapter = sis;               // <-- the error
+                                        ^
+1 error

@@ -1,0 +1,34 @@
+== part one: the 1994 shape ==
+rule              -> AllOf[CS201, AnyOf[MATH150, MATH160]]
+satisfiedBy(dana) -> true
+
+It works, and the uniformity is real: nothing above had to ask whether
+it was holding a course or a group. That is what the pattern buys.
+
+Now walk the tree generically and try to edit a node:
+   first child            -> CS201
+   firstChild.add(...)    -> UnsupportedOperationException: a course has no children
+
+Nothing in the type system warned the caller. `add` is on Requirement,
+so every Requirement claims to accept children and one third of them
+are lying. That is the cost of putting add/remove on the shared type.
+
+== part two: the sealed shape ==
+rule              -> AllOf[parts=[Course[code=CS201], AnyOf[parts=[Course[code=MATH150], Course[code=MATH160]]]]]
+satisfiedBy(dana) -> true
+
+Same answer, same uniformity -- satisfiedBy never asks what kind of node
+it has, the switch does that once. Three differences from part one:
+
+  1. Course has no add or remove, because it has no children. There is
+     nothing to throw from and nothing to document as unsupported.
+  2. The switch has no default branch and compiles anyway, because the
+     compiler knows the three cases are all of them. Add a fourth node
+     type and every switch like this one stops compiling -- see the
+     composite-missing-case demo next door.
+  3. Nothing mutates. The tree is a value, so it can be shared, compared
+     with equals, and printed -- the toString above is free.
+
+What it gives up: `sealed` means no code outside this file can add a
+fourth kind of Req. For a catalog rule you own, that is the point.
+For a library someone else extends, it is the wrong trade.

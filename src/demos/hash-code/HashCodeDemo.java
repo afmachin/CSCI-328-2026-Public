@@ -2,8 +2,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *   javac HashCodeDemo.java
- *   java  -cp HashCodeDemo
+ * The equals/hashCode failure
+ *
+ *   cd reference/demos/hash-code
+ *   javac HashCodeDemo.java && java HashCodeDemo
+ *
+ * The recorded output is in output.txt beside this file.
+ *
+ * Part two uses MeetingTime, copied verbatim from
+ * registration/MeetingTime.java. It is your own codebase:
+ * you can run the same experiment against the real class whenever you like.
  */
 public class HashCodeDemo {
 
@@ -35,20 +43,21 @@ public class HashCodeDemo {
     static void partTwo() {
         System.out.println("== part two: your own codebase ==");
 
-        // Two sections that happen to meet at the same time, and a third
-        // slot the advisor looks up but never added.
+        // Two sections that happen to meet at the same time.
         MeetingTime a = new MeetingTime("MON", 540, 630);
         MeetingTime b = new MeetingTime("MON", 540, 630);
-        MeetingTime lookup = new MeetingTime("MON", 540, 630);
 
         Set<MeetingTime> week = new HashSet<>();
         week.add(a);
         week.add(b);
 
-        System.out.println("a.equals(b)        = " + a.equals(b));
-        System.out.println("same hash code?    = " + (a.hashCode() == b.hashCode()));
-        System.out.println("distinct slots     = " + week.size() + "   (the advisor expects 1)");
-        System.out.println("week.contains(...) = " + week.contains(lookup));
+        System.out.println("a.equals(b)                                   = " + a.equals(b));
+        System.out.println("a.hashCode() == b.hashCode()                  = "
+                + (a.hashCode() == b.hashCode()));
+        System.out.println("distinct slots in the combined week           = "
+                + week.size() + "   (advisor expects 1)");
+        System.out.println("week.contains(new MeetingTime(\"MON\",540,630)) = "
+                + week.contains(new MeetingTime("MON", 540, 630)));
     }
 
     /** Overrides equals, inherits Object.hashCode(), which is identity-based. */
@@ -63,6 +72,7 @@ public class HashCodeDemo {
 /*
  * Copied from registration/MeetingTime.java.
  * Only the `public` modifier is dropped, so this one file compiles on its own;
+ * every line below it is the class exactly as it ships.
  */
 class MeetingTime {
 

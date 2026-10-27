@@ -1,0 +1,54 @@
+running on Java 21.0.12.1
+
+== part one: what a lambda is called ==
+lambda           -> LambdaIdentityDemo$$Lambda/0x00007fdd38000c18@330bedb4
+method reference -> LambdaIdentityDemo$$Lambda/0x00007fdd38001800@2503dbd3
+anonymous class  -> LambdaIdentityDemo$1@4b67cf4d
+named class      -> SeniorityPolicy
+
+You get the enclosing class and an opaque hash. You do not get which
+lambda in that class, and there is nothing to search the codebase for.
+The anonymous class at least has a name you can locate; the named one
+is the only one you could say out loud to a colleague at 2 a.m.
+
+== part two: when is the same lambda the same object? ==
+capturing nothing, evaluated twice     -> true   one cached instance
+capturing auditLog, evaluated twice    -> false  a new object each time
+
+That is the rule. It matters because every realistic listener captures
+something -- the log, the waitlist, the service it calls -- so every
+realistic listener is a fresh object on every evaluation.
+
+== part three: two identical bodies ==
+a == b      -> false
+a.equals(b) -> false   lambdas do not override equals, so this is reference equality
+
+== part four: subscribe, then try to unsubscribe ==
+after subscribe                     -> 1 listener
+remove(an identical lambda body)    -> returned false, still 1 listener
+
+Nothing threw. Nothing was logged. The listener is still subscribed and
+everything it captured is still reachable. That is the leak.
+
+Fix one -- keep the reference:
+   subscribed a held reference      -> 2 listeners
+   remove(held)                     -> returned true, now 1
+
+Fix two -- return a handle, which is the one to teach:
+   subscribed via Publisher         -> 1 listener
+   sub.close()                      -> 0 listeners
+
+The caller never has to hold the lambda, and there is no way to ask for
+the wrong removal. Correct unsubscription is the only path available.
+
+== part five: what `this` refers to ==
+inside a lambda, this     -> the enclosing LambdaIdentityDemo
+inside an anon class, this -> LambdaIdentityDemo$2, its own object
+
+A lambda has no `this` of its own, so `this` is the enclosing instance.
+That means a lambda written inside an instance method captures the whole
+enclosing object, not just the fields it mentions. Subscribe one of those
+and forget to unsubscribe, and the listener list holds that object and
+everything it references. This is the capture cost the note warns about,
+and it is the second half of why the failure above is a leak and not
+merely a missed callback.

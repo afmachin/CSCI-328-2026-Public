@@ -1,0 +1,11 @@
+Adapter    implements TranscriptSource, holds a LegacySisClient   -> same type? false
+Decorator  implements TranscriptSource, holds a TranscriptSource   -> same type? true
+Proxy      implements TranscriptSource, holds a TranscriptSource   -> same type? true
+
+Only the adapter's wrapped type differs from the type it implements.
+Decorator and Proxy are identical here. Nothing below the name tells them apart.
+
+    [audit] looked up S001
+first  call: [CS101]
+second call: [CS101]
+The audit line appears once, not twice: the proxy did not delegate.
