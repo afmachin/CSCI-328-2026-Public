@@ -14,7 +14,8 @@ Proxy      implements TranscriptSource, holds a TranscriptSource   -> same type?
 It then runs a three-deep stack twice and shows the audit line appearing **once**,
 because the proxy declined to delegate on the second call.
 
-**Cited by** Structural Design Module on canvas, *Adapter*;
+**Cited by** `notes/07-structural.md`, *Adapter: the one you already have*; the Week 7
+session opening; and Exercise 7 part 3.
 
 **The companion exhibit** is `../adapter-not-assignable/`, which does not compile on
 purpose: the adapter's inner object cannot stand in for the adapter, and that is a
@@ -23,7 +24,7 @@ compiler error rather than a matter of taste.
 **Run it**
 
 ```sh
-cd demos/wrapper-shapes
+cd reference/demos/wrapper-shapes
 javac WrapperShapesDemo.java && java WrapperShapesDemo
 ```
 

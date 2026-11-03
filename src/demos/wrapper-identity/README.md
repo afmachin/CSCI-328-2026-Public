@@ -12,12 +12,13 @@
    frames, five of them named `evaluate`, and it reads **inside-out**: you write
    `Retried` first and it appears last, just above `main`.
 
-**Cited by** Structural Design Module on canvas
+**Cited by** `notes/07-structural.md`, *The general cost of wrapping* and *What this
+costs*.
 
 **Run it**
 
 ```sh
-cd demos/wrapper-identity
+cd reference/demos/wrapper-identity
 javac WrapperDemo.java && java WrapperDemo
 ```
 

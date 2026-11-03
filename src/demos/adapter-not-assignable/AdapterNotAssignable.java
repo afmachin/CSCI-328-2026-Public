@@ -1,4 +1,4 @@
-// DOES NOT COMPILE, on purpose. That failure is the demonstration. 
+// DOES NOT COMPILE, on purpose. That failure is the demonstration. Week 7.
 // The decorator's inner object is interchangeable with the decorator.
 // The adapter's inner object is not interchangeable with the adapter.
 //

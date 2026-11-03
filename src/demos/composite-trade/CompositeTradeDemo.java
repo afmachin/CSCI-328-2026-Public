@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The other two halves of the Composite section.
+ * The other two halves of note 07's Composite section, in a form you can run.
  *
  *   cd reference/demos/composite-trade
  *   javac CompositeTradeDemo.java && java CompositeTradeDemo

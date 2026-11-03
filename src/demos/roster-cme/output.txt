@@ -1,0 +1,13 @@
+--- the baseline's Roster ---
+getStudents() returns the live map, so a caller can drop a
+student mid-traversal. Nothing in Roster's source forbids it:
+  visited 1 of 3, then java.util.ConcurrentModificationException
+The exception is the lucky case. It is thrown on a best-effort
+basis, so the same code can also just skip a student silently.
+
+--- card 04's Roster ---
+for-each works: Alvarez Brennan Chau 
+stream works:   S1 S2 S3 
+remove() through the iterator: UnsupportedOperationException
+No way in. The caller gets traversal and nothing else, which is
+the whole of what the pattern is for.

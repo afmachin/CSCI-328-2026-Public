@@ -9,7 +9,7 @@ and either MATH150 or MATH160* — so the two shapes can be compared on identica
 - **The sealed shape**: three records, no `add`, no `remove`, operations as an exhaustive
   `switch` with no `default`. Nothing throws and nothing mutates.
 
-**Cited by** Structural Design Module on canvas, *Composite is not like the others*.
+**Cited by** `notes/07-structural.md`, *Composite is not like the others*.
 
 **The other two parts of this story** are next door: `../composite-trade/` prices the
 safe design, and `../composite-missing-case/` shows what the sealed shape costs when a
@@ -18,7 +18,7 @@ fourth node type arrives.
 **Run it**
 
 ```sh
-cd demos/composite-shapes
+cd reference/demos/composite-shapes
 javac CompositeDemo.java && java CompositeDemo
 ```
 

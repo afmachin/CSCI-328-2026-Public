@@ -5,12 +5,12 @@
 `hasOpenSeats()` somewhere else entirely — so two threads can both be told there is a
 seat. That is the shipped design, not a contrived one.
 
-**Cited by** data-oriented module, on invariants with two owners.
+**Cited by** `notes/11-data-oriented.md`, on invariants with two owners.
 
 **Run it**
 
 ```sh
-cd demos/race
+cd reference/demos/race
 javac RaceDemo.java && java RaceDemo
 ```
 
@@ -24,3 +24,6 @@ failures is not a passing grade** — it means the window was not hit this time.
 Two things in the recording are not the program's own output: the header, and a
 `Picked up JAVA_TOOL_OPTIONS:` line the recording machine's JVM printed about its
 environment. You will not see the latter.
+
+`verify.sh` therefore only checks that this one compiles and produces output. Run it
+yourself, twice, on the machine you teach from before relying on it in a session.

@@ -1,0 +1,16 @@
+request: TIME_CONFLICT
+chain:   chair, dean
+result:  Optional.empty
+
+--- caller A: treats empty as 'denied' ---
+approved = false
+tells the student: override denied
+...which is a denial nobody issued. No chair, no dean and no
+registrar ever saw this request.
+
+--- caller B: treats empty as 'not my decision to make' ---
+NoAuthorityException: no handler has authority over TIME_CONFLICT for S7
+...which is the truth, and is now somebody's job.
+
+Same chain, same empty Optional. The decision is the caller's,
+and falling off the end makes it by default.

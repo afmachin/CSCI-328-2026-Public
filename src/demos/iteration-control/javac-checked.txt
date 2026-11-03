@@ -1,0 +1,5 @@
+$ javac CheckedInLambda.java
+CheckedInLambda.java:37: error: unreported exception IOException; must be caught or declared to be thrown
+        ROSTER.forEach(s -> writeTranscript(s));
+                                           ^
+1 error

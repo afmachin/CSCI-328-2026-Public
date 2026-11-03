@@ -2,7 +2,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The equals/hashCode failure
+ * The equals/hashCode failure from note 03, in a form you can run.
  *
  *   cd reference/demos/hash-code
  *   javac HashCodeDemo.java && java HashCodeDemo
@@ -10,7 +10,7 @@ import java.util.Set;
  * The recorded output is in output.txt beside this file.
  *
  * Part two uses MeetingTime, copied verbatim from
- * registration/MeetingTime.java. It is your own codebase:
+ * codebase/v0-baseline/src/registration/MeetingTime.java. It is your own codebase:
  * you can run the same experiment against the real class whenever you like.
  */
 public class HashCodeDemo {
@@ -70,7 +70,7 @@ public class HashCodeDemo {
 }
 
 /*
- * Copied from registration/MeetingTime.java.
+ * Copied from codebase/v0-baseline/src/registration/MeetingTime.java.
  * Only the `public` modifier is dropped, so this one file compiles on its own;
  * every line below it is the class exactly as it ships.
  */

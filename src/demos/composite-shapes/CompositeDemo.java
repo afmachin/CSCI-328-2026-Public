@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * Composite, written twice: the 1994 shape and the sealed-interface shape, from note 07.
  *
- *   cd demos/composite-shapes
+ *   cd reference/demos/composite-shapes
  *   javac CompositeDemo.java && java CompositeDemo
  *
  * The recorded output is in output.txt beside this file.
@@ -14,7 +14,7 @@ import java.util.Set;
  * Part one ends in the exception the classical shape forces on its leaves.
  *
  * The third exhibit does not compile on purpose and so is not in this file. It is
- * demos/composite-missing-case/, which holds CompositeMissingCase.java and the
+ * reference/demos/composite-missing-case/, which holds CompositeMissingCase.java and the
  * compiler's answer in javac-output.txt.
  */
 public class CompositeDemo {

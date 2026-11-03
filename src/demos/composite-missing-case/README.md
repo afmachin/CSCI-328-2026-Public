@@ -14,13 +14,13 @@ This is the expression problem in four lines of diff. The sealed shape makes a n
 *operation* cheap and a new *node type* expensive; the classical shape is the other way
 round. Neither is an upgrade on the other, which is why note 07 calls it a trade.
 
-**Cited by** Structural Module on Canvas, *The sealed shape*. Week 10 gives this its proper
+**Cited by** `notes/07-structural.md`, *The sealed shape*. Week 10 gives this its proper
 treatment.
 
 **Run it**
 
 ```sh
-cd demos/composite-missing-case
+cd reference/demos/composite-missing-case
 javac CompositeMissingCase.java
 ```
 

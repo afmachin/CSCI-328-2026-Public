@@ -3,9 +3,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Why Observer does not collapse.
+ * Why Observer does not collapse, from note 08, in a form you can run.
  *
- *   cd demos/lambda-identity
+ *   cd reference/demos/lambda-identity
  *   javac LambdaIdentityDemo.java && java LambdaIdentityDemo
  *
  * The recorded output is in output.txt beside this file.

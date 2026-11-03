@@ -1,0 +1,10 @@
+one request: CREDIT_LIMIT, 2 credits over
+
+chain built chair -> dean -> registrar
+  granted by: dean
+chain built chair -> registrar -> dean
+  granted by: registrar
+
+Same three handlers. Same request. Different authority.
+Nothing in any handler changed, and no handler can tell you which
+list it is in. The institutional rule lives in the order alone.

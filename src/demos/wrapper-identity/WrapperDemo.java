@@ -2,9 +2,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The costs of wrapping
+ * The costs of wrapping from note 07, in a form you can run.
  *
- *   cd demos/wrapper-identity
+ *   cd reference/demos/wrapper-identity
  *   javac WrapperDemo.java && java WrapperDemo
  *
  * The recorded output is in output.txt beside this file.

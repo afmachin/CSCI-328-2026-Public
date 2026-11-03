@@ -20,12 +20,12 @@ type.
 The second error is the one that matters later: it is why the Observer failure in
 `../lambda-identity/` is not an accident of the library.
 
-**Cited by** Functional collapse Module on canvas
+**Cited by** `notes/08-functional-collapse.md`, *The question*.
 
 **Run it**
 
 ```sh
-cd demos/no-function-types
+cd reference/demos/no-function-types
 javac NoFunctionTypes.java
 ```
 

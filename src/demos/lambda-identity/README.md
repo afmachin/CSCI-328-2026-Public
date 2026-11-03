@@ -14,7 +14,7 @@ single result in the pattern block.
 - Inside a lambda `this` is the **enclosing instance**, not the lambda — so a lambda
   written in an instance method captures the whole enclosing object.
 
-**Cited by** Functional Collapse Module on canvas, *Observer: it does not collapse at all*.
+**Cited by** `notes/08-functional-collapse.md`, *Observer: it does not collapse at all*.
 
 **Run it**
 
@@ -26,4 +26,5 @@ javac LambdaIdentityDemo.java && java LambdaIdentityDemo
 Compiles clean. **Two lines will not match `output.txt` and are supposed not to:** in
 part one the `/0x...` class address is assigned by the JVM and differs on every run, and
 the `@...` identity hash can differ between JVMs. Everything else is reproducible —
-parts two to five printed identically across runs on JDK 21.0.12. 
+parts two to five printed identically across runs on JDK 21.0.12. `verify.sh` masks the
+addresses so this demo can still be checked automatically.

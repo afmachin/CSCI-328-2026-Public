@@ -1,0 +1,28 @@
+--- 1. stopping early ---
+external, stop at the first student over 16 credits: visited S1 S2 S3 -> stopping at Chau
+internal, forEach with the same test:              visited S1 S2 S3 S4 S5 -> all five, no way out
+A stream can short-circuit, but only with an operation that is
+built to: findFirst, anyMatch, takeWhile. forEach is not one.
+stream, findFirst:                                 Chau
+
+--- 2. stepping two sequences together ---
+external, one advisor per student, in order:
+  Alvarez -> Okafor
+  Brennan -> Petrov
+  Chau -> Quinn
+  Dube -> Reyes
+  Essien -> Sato
+Each loop body advances both. Neither collection knows the other
+exists, and no index arithmetic appears anywhere.
+internal: forEach gives each lambda one element and no position,
+so pairing needs an external counter, which is the loop variable
+you just gave away.
+
+--- 3. resuming ---
+read two: Alvarez Brennan   (iterator kept, work done elsewhere)
+resume:   Chau Dube Essien 
+The iterator IS the position, so it can be put down and picked up.
+forEach has no position to hand back.
+
+Control you keep is flexible for you.
+Control you hand over is flexible for the implementation.

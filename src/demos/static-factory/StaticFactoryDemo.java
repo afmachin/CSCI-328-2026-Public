@@ -1,10 +1,10 @@
 import java.util.List;
 
 /**
- * The three things a static factory method can do and a constructor cannot.
- * 
+ * The three things a static factory method can do and a constructor cannot, from note 06,
+ * in a form you can run.
  *
- *   cd demos/static-factory
+ *   cd reference/demos/static-factory
  *   javac StaticFactoryDemo.java && java StaticFactoryDemo
  *
  * The recorded output is in output.txt beside this file.

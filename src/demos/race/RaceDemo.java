@@ -3,13 +3,14 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * The seat count from note 11, in a form you can run.
  *
- *   cd demos/race
+ *   cd reference/demos/race
  *   javac RaceDemo.java && java RaceDemo
  *
  * The recorded output is in output.txt beside this file.
  *
- * The classes at the bottom are copied from baseline, with only the
+ * The classes at the bottom are copied from codebase/v0-baseline, with only the
  * `public` modifier dropped so this one file compiles on its own. Nothing about the
  * defect is invented for the demo: `CourseOffering` owns the seat count,
  * `Student.enroll` increments it, and the eligibility check reads `hasOpenSeats()`
@@ -172,7 +173,7 @@ public class RaceDemo {
 }
 
 /*
- * Below: copied from registration/, `public` dropped,
+ * Below: copied from codebase/v0-baseline/src/registration/, `public` dropped,
  * trimmed to the fields and methods this demo touches. Two additions are marked.
  */
 

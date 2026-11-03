@@ -1,0 +1,44 @@
+// The fourth thing internal iteration takes: a checked exception cannot leave a lambda.
+//
+// NOT a .java file -- it shares this folder with IterationControlDemo.java, which must
+// compile, so it stays invisible to `javac *.java`. To reproduce:
+//
+//     cp CheckedInLambda.java.txt /tmp/CheckedInLambda.java
+//     javac /tmp/CheckedInLambda.java
+//
+// The real output is in javac-checked.txt.
+import java.io.IOException;
+import java.util.List;
+
+public class CheckedInLambda {
+
+    record Student(String id, String name) { }
+
+    static final List<Student> ROSTER =
+            List.of(new Student("S1", "Alvarez"), new Student("S2", "Brennan"));
+
+    // A perfectly ordinary method that declares a checked exception.
+    static void writeTranscript(Student s) throws IOException {
+        throw new IOException("transcript store unavailable for " + s.id());
+    }
+
+    // External iteration: the loop body is inside a method that can declare the
+    // exception, so this compiles and the exception propagates to the caller.
+    static void externalIteration() throws IOException {
+        for (Student s : ROSTER) {
+            writeTranscript(s);
+        }
+    }
+
+    // Internal iteration: the body is a Consumer, whose accept() declares no checked
+    // exception, so there is nowhere for IOException to go. Adding `throws IOException`
+    // to this method does not help -- the lambda is a different method.
+    static void internalIteration() throws IOException {
+        ROSTER.forEach(s -> writeTranscript(s));
+    }
+
+    public static void main(String[] args) throws IOException {
+        externalIteration();
+        internalIteration();
+    }
+}

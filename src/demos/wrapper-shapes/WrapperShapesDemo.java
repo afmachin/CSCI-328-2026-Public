@@ -1,13 +1,13 @@
-// What the three wrappers look like to the compiler.
+// Week 7 - what the three wrappers look like to the compiler.
 //
-//   cd demos/wrapper-shapes
+//   cd reference/demos/wrapper-shapes
 //   javac WrapperShapesDemo.java && java WrapperShapesDemo
 //
 // The recorded output is in output.txt beside this file. The companion exhibit is
 // reference/demos/adapter-not-assignable/, which does not compile on purpose.
 // The vendor type and the domain interface are stand-ins for
-// registration/LegacySisClient.java and the
-// TranscriptSource interface introduced in Structural Design Module on canvas.
+// codebase/v0-baseline/src/registration/LegacySisClient.java and the
+// TranscriptSource interface introduced in notes/07-structural.md.
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
