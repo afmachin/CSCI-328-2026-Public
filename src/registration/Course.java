@@ -1,30 +1,29 @@
 package registration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class Course {
+public final class Course {
 
-    private String code;
-    private String title;
-    private int credits;
-    private List<String> prerequisites = new ArrayList<String>();
+    private final String code;
+    private final String title;
+    private final int credits;
+    private final List<String> prerequisites;
 
     public Course(String code, String title, int credits) {
+        this(code, title, credits, List.of());
+    }
+
+    public Course(String code, String title, int credits, List<String> prerequisites) {
         this.code = code;
         this.title = title;
         this.credits = credits;
+        this.prerequisites = Collections.unmodifiableList(new ArrayList<>(prerequisites));
     }
 
     public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
     public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
     public int getCredits() { return credits; }
-    public void setCredits(int credits) { this.credits = credits; }
-
     public List<String> getPrerequisites() { return prerequisites; }
-    public void setPrerequisites(List<String> prerequisites) { this.prerequisites = prerequisites; }
 }

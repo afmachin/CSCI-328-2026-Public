@@ -1,0 +1,229 @@
+CourseCatalog Findings and Evaluation
+
+Setup
+Each pair has the same passing CS101 grade in LegacySisClient, the transcript
+source RegistrationService actually reads. Both students ask for the same
+CourseOffering, which has two seats. All registration results come from
+service.describeResult. Attack 1 does not print the prerequisite list. Attack 2
+prints course.getPrerequisites(), as required.
+
+Baseline findings
+Course exposes the same mutable list through getPrerequisites and keeps the
+caller's list in setPrerequisites. In both attacks, the first student registers.
+Adding MATH150 then refuses the second student with the same transcript.
+The second student's refusal is caused by the changed prerequisite, not seats.
+
+Design choice
+I chose a final class with final fields and a constructor that copies the list.
+This keeps the existing getter names, so other registration classes still
+compile. I removed the setters because keeping them would let Course change.
+List.copyOf creates an unmodifiable snapshot. The second immutable version
+uses Collections.unmodifiableList(new ArrayList<>(prerequisites)), so it also
+owns a separate snapshot. Wrapping the caller's original list without copying
+would leave Attack 2 working. String elements are already immutable.
+
+Comparison table: all three attacks rerun against all three versions
+Attack | Baseline | List.copyOf | unmodifiableList with defensive copy
+-------|----------|-------------|--------------------------------------
+1: Getter add | Add succeeds; first registers, second misses MATH150 | UnsupportedOperationException; both register | UnsupportedOperationException; both register
+2: Held-list add | [CS101, MATH150]; first registers, second misses MATH150 | [CS101]; both register | [CS101]; both register
+3: Null element | Construction succeeds; Missing prerequisite: null | Construction throws NullPointerException; no advising registration | Construction succeeds; Missing prerequisite: null
+
+Difference and preference
+Both immutable versions stop the two mutation attacks, but my null attack
+throws NullPointerException during construction with List.copyOf and produces
+"Missing prerequisite: null" with unmodifiableList, so I prefer List.copyOf.
+
+Is rejecting null a feature?
+Yes. A missing course code is not a meaningful prerequisite. Rejecting it when
+building the course catches bad catalog data before it reaches advising.
+It would surprise Catalog.attack3, the constructor caller, and a registrar's
+catalog import caller that previously supplied null for incomplete data.
+That caller now needs to validate or correct the data before constructing it.
+
+Main and the cost
+Main now supplies the CS101 and CS201 prerequisite lists to the constructor
+instead of adding them through the getter. Updating Main is a migration cost,
+but it exposes a cost the old design was hiding: callers could silently change
+requirements after a section already used the course. Initial data and later
+corrections now have to be handled explicitly. Main's full output is unchanged;
+each version was compared with the original output using cmp.
+
+Correcting a title mid-term
+The registrar creates a new Course with the corrected title and the same code,
+credits, and prerequisites. The catalog entry and every affected offering must
+be updated to the replacement, using CourseOffering.setCourse. Existing course
+objects keep the old title, so the application needs a coordinated replacement
+process. I would still ship this design because stable prerequisites prevent
+silent changes in registration decisions. The submitted final code keeps the
+unmodifiableList version to demonstrate the assigned third-commit experiment;
+my production preference is the List.copyOf version.
+
+The baseline class I cannot make immutable
+LegacySisClient is explicitly marked as vendor code that we cannot change.
+Its singleton updates its shared map and lists in seed, and fetchGradeRows
+exposes the stored mutable String[] rows. Making it immutable would require
+changing that fixed vendor API and its mutation behavior. Other classes can be
+redesigned with immutable snapshots, but this vendor class is outside our
+control. A wrapper can copy its data without changing the client itself.
+
+How the comparison was run
+The same final Catalog attack methods were compiled against the three historical
+Course versions. Only the baseline's createCourse helper was adapted back to
+its three-argument constructor and setPrerequisites API. Each version ran in a
+fresh JVM, with fresh students and offerings. RegistrationService and the
+other domain classes were unchanged.
+
+Recorded output follows.
+
+COMMIT 1: BASELINE, ATTACKS 1 AND 2
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync completed.
+Getter Second could not register:
+  - Missing prerequisite: MATH150
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+Alias Second could not register:
+  - Missing prerequisite: MATH150
+Course prerequisites: [CS101, MATH150]
+
+
+COMMIT 2: LIST.COPYOF, ATTACKS 1 AND 2
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync blocked: UnsupportedOperationException
+[audit] ENROLLED :: CG002 -> 20101
+[notify] CG002 | Enrollment confirmed | You are enrolled in CS201.
+Getter Second registered for CS201
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+[audit] ENROLLED :: CA002 -> 20102
+[notify] CA002 | Enrollment confirmed | You are enrolled in CS201.
+Alias Second registered for CS201
+Course prerequisites: [CS101]
+
+
+COMMIT 3: UNMODIFIABLELIST, ALL THREE ATTACKS
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync blocked: UnsupportedOperationException
+[audit] ENROLLED :: CG002 -> 20101
+[notify] CG002 | Enrollment confirmed | You are enrolled in CS201.
+Getter Second registered for CS201
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+[audit] ENROLLED :: CA002 -> 20102
+[notify] CA002 | Enrollment confirmed | You are enrolled in CS201.
+Alias Second registered for CS201
+Course prerequisites: [CS101]
+
+Attack 3: null prerequisite
+Construction succeeded.
+Null Student could not register:
+  - Missing prerequisite: null
+
+COMMIT 4: ALL THREE ATTACKS AGAINST BASELINE
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync completed.
+Getter Second could not register:
+  - Missing prerequisite: MATH150
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+Alias Second could not register:
+  - Missing prerequisite: MATH150
+Course prerequisites: [CS101, MATH150]
+
+Attack 3: null prerequisite
+Construction succeeded.
+Null Student could not register:
+  - Missing prerequisite: null
+
+COMMIT 4: ALL THREE ATTACKS AGAINST LIST.COPYOF
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync blocked: UnsupportedOperationException
+[audit] ENROLLED :: CG002 -> 20101
+[notify] CG002 | Enrollment confirmed | You are enrolled in CS201.
+Getter Second registered for CS201
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+[audit] ENROLLED :: CA002 -> 20102
+[notify] CA002 | Enrollment confirmed | You are enrolled in CS201.
+Alias Second registered for CS201
+Course prerequisites: [CS101]
+
+Attack 3: null prerequisite
+Construction failed: NullPointerException
+Advising screen: no course created; registration not attempted.
+
+COMMIT 4: ALL THREE ATTACKS AGAINST UNMODIFIABLELIST
+
+Attack 1: through the getter
+[audit] ENROLLED :: CG001 -> 20101
+[notify] CG001 | Enrollment confirmed | You are enrolled in CS201.
+Getter First registered for CS201
+Getter sync blocked: UnsupportedOperationException
+[audit] ENROLLED :: CG002 -> 20101
+[notify] CG002 | Enrollment confirmed | You are enrolled in CS201.
+Getter Second registered for CS201
+
+Attack 2: through the held list
+[audit] ENROLLED :: CA001 -> 20102
+[notify] CA001 | Enrollment confirmed | You are enrolled in CS201.
+Alias First registered for CS201
+[audit] ENROLLED :: CA002 -> 20102
+[notify] CA002 | Enrollment confirmed | You are enrolled in CS201.
+Alias Second registered for CS201
+Course prerequisites: [CS101]
+
+Attack 3: null prerequisite
+Construction succeeded.
+Null Student could not register:
+  - Missing prerequisite: null
+
+MAIN: IDENTICAL BEFORE AND AFTER
+
+[audit] ENROLLED :: S001 -> 10422
+[notify] S001 | Enrollment confirmed | You are enrolled in CS201.
+Alice Reyes registered for CS201
+Ben Okafor could not register:
+  - Missing prerequisite: CS101
+Alice Reyes could not register:
+  - Missing prerequisite: CS201
+
+Alice is enrolled in: [CS201]
+
+Roster 10422:
+  S001 Alice Reyes (4 cr)

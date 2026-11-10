@@ -1,0 +1,121 @@
+RegistrationServiceEvaluation
+Evaluation of registration.RegistrationService.register
+
+Source:
+https://github.com/afmachin/CSCI-328-2026-Public/blob/main/src/registration/RegistrationService.java
+
+1. Dependencies
+
+Parameters and the objects reached through them
+
+- Student student: getId links the student to SIS rows, waitlisting, auditing,
+  and notifications. getCurrentEnrollments and getCurrentCredits supply the
+  current schedule and credit total. enroll must update the student's enrollment
+  list and the offering's enrolled count. Student.getTranscript() is not read.
+
+- CourseOffering offering: register uses getCrn, getCourse, getMeetings, and
+  hasOpenSeats. Seat availability depends on capacity and the enrolled count.
+
+- Course: the requested course supplies its code, prerequisite list, and credits.
+  Existing courses supply codes for conflict messages and credits for the total.
+
+- Lists and MeetingTime objects: the method iterates current enrollments,
+  prerequisites, and existing/proposed meetings. It calls existing.overlaps
+  to decide whether the student's schedule conflicts.
+
+Service fields and collaborators
+
+- lastErrors: this List<String>, created as an ArrayList, is cleared and filled
+  with refusal messages. One service cannot safely keep separate error lists
+  for simultaneous registrations; its next call replaces the previous errors.
+
+- WaitlistManager: add and positionOf depend on its section queues. Because the
+  service creates its own manager, callers cannot inject a shared or persistent
+  waitlist through the constructor.
+
+- AuditLog: record receives the event name and student/section details. The
+  internally created logger prevents callers from injecting a test recorder
+  or a different audit destination through the service's normal API.
+
+- NotificationGateway: send receives an ID, subject, and body after enrollment.
+  Its internal construction prevents callers from injecting a fake sender or
+  an email implementation through the normal API.
+
+2. Hidden dependencies and what they prevent
+
+These globals, formats, and policies are not explicitly supplied to the service.
+
+- LegacySisClient.getInstance(): transcripts come from a global singleton.
+  A developer cannot inject independent transcript sources into two services
+  or replace the source with a fake that simulates SIS failure. Seeding the
+  singleton changes shared state; filling Student.getTranscript() does not
+  control the rows this method reads.
+
+- SIS row format: String[][] rows must contain a non-null course code at index 0
+  and a grade at index 1. The term at index 2 is unused. A developer cannot use
+  reordered columns or typed entries without an adapter or a code change.
+  Short rows or null codes can cause exceptions instead of normal refusals.
+  Returned row arrays share the vendor's mutable data, so a developer cannot
+  treat them as an isolated snapshot unaffected by other consumers.
+
+- Grade.valueOf and Grade.isPassing: grade text must match an enum name exactly,
+  and only A, B, and C pass. A developer cannot select lowercase/plus-minus
+  grade support or a different passing policy through service configuration.
+  Unsupported grade text can throw IllegalArgumentException when checked.
+
+- Config.getInt("max_credits", 18): the limit comes from global settings, a fixed
+  key, and a fallback of 18. A developer cannot independently configure different
+  limits for two service instances through the API. Nonnumeric values can fail
+  during parsing.
+
+- Config.settings.get("waitlist_enabled").equals("true"): waitlisting depends
+  on a global key and the exact text "true". A developer cannot independently
+  enable it for one service and disable it for another through their constructors.
+  A missing key can cause NullPointerException.
+
+- Code matching and meeting policy: String.equals requires matching code text.
+  MeetingTime.overlaps requires matching day text and compares minute intervals;
+  meetings touching at an endpoint do not conflict. A developer cannot select
+  code aliases or a travel-time buffer through a registration policy parameter.
+
+- System.out: AuditLog.record and NotificationGateway.send both print to the
+  console. A developer cannot supply a separate
+  output sink for each service through its API; redirecting System.out affects
+  the whole JVM.
+
+- Fixed messages and event names: refusal text, ENROLLED/WAITLISTED labels, and
+  the enrollment notification are hard-coded. A developer cannot supply
+  translations or a different notification template through configuration.
+
+- Enrollment contract: register assumes student.enroll completes and updates
+  both objects after validation. Baseline GraduateStudent.enroll can throw if
+  advisor approval is missing. A developer cannot rely on describeResult
+  displaying every refusal without handling that exception or fixing the contract.
+
+3. Most important dependency and proposed change
+
+I think the SIS singleton matters most because it controls prerequisite and
+repeat-course decisions while preventing callers from isolating the data source.
+I would inject a small transcript-source interface through the constructor.
+
+Types and signatures only; this is a sketch, not an implementation:
+
+interface TranscriptSource {
+    String[][] fetchGradeRows(String studentId);
+}
+
+RegistrationService(TranscriptSource transcripts);
+boolean register(Student student, CourseOffering offering);
+
+The service would use the supplied source instead of looking up the singleton.
+A production provider could delegate to LegacySisClient, while tests supply
+independent rows or failures. Keeping String[][] makes the change small, but
+leaves the row-format dependency and global configuration for later work.
+
+Callers affected
+
+Main.main currently calls new RegistrationService(), so it would need to provide
+a TranscriptSource. Any other no-argument construction in tests or harnesses
+would need the same change. Calls to register(student, offering) and
+describeResult(student, offering) would keep their existing arguments.
+The vendor LegacySisClient would not need to change.
