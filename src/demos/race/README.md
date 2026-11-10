@@ -1,9 +1,11 @@
 # race
 
-**What it shows.** That the baseline's seat count can be wrong. `CourseOffering` holds
-`enrolledCount`, `Student.enroll` increments it, and the eligibility check reads
+**What it shows.** That the seat count can be wrong. `CourseOffering` holds `enrolled`,
+`Student.enroll` increments it through the public setter, and the eligibility check reads
 `hasOpenSeats()` somewhere else entirely — so two threads can both be told there is a
-seat. That is the shipped design, not a contrived one.
+seat. That is the shipped design, not a contrived one. The reading class is
+`EligibilityChecker`; before that the read is
+inlined in `RegistrationService` and the fault is the same.
 
 **Cited by** `notes/11-data-oriented.md`, on invariants with two owners.
 
