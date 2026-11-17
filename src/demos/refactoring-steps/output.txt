@@ -1,0 +1,89 @@
+=== Step 0 - pin ===
+
+  Recording what the inherited class does. Not what it should do.
+
+      clean enrolment         Alice Reyes registered for CS201
+      missing prerequisite    Ben Okafor could not register: / Missing prerequisite: CS101
+      over the credit cap     Alice Reyes could not register: / Would total 20 credits, limit is 18
+      section full            Alice Reyes could not register: / Section is full
+      two failures at once    Dana Vale could not register: / Missing prerequisite: CS101
+
+  Now run the same query twice, to check the pin is stable.
+  The offering has no MeetingTime on it -- that matters, see below.
+
+      enrollments before:     0, seats taken: 0
+      after 1 describeResult: 1, seats taken: 1
+      after 2 describeResult: 2, seats taken: 2
+      capacity is 2; open seats? false
+
+  One student, asked about twice, has consumed a two-seat section.
+  The act of pinning found a defect that reading did not.
+
+  Put meetings on that offering and you see something else instead:
+      second call: Alice Reyes could not register: / Time conflict with CS201
+      seats taken: 1 -- the time-conflict rule caught her own enrolment.
+      Same defect underneath; a longer story to tell. Pin without meetings.
+
+=== Step 1 - seam ===
+
+  GradeSource, SisGradeSource, and a no-argument constructor that
+  delegates. The class had no explicit constructor before, so writing
+  that one back by hand is what keeps every caller compiling.
+
+      pass   clean enrolment
+      pass   missing prerequisite
+      pass   over the credit cap
+      pass   section full
+      pass   two failures at once
+
+  0 pins broken. Commit.
+
+  And here is what the seam bought, which Step 0 could not do at all:
+      a student the SIS has never heard of, with a fake grade source:
+      Unknown Student registered for CS201
+
+=== Step 2 - extract, one rule at a time ===
+
+  Five private methods, one per rule. Behaviour unchanged:
+
+      pass   clean enrolment
+      pass   missing prerequisite
+      pass   over the credit cap
+      pass   section full
+      pass   two failures at once
+
+  0 pins broken -- but look at what the extraction cost.
+
+      private boolean checkPrerequisites(String[][] rows,
+                                         CourseOffering offering,
+                                         List<String> errors)
+
+  Each rule has to report two things: that it failed, and why. A boolean
+  carries the first. The second had to be passed in as a mutable list for
+  the method to write into -- so every extracted rule now takes an
+  out-parameter it only ever appends to.
+
+  That parameter is not a wart in the refactoring. It is the design
+  telling you that a rule's result is a value nobody modelled, and it is
+  the same reason the caller cannot report more than one failure.
+
+=== Step 3 - now change the behaviour ===
+
+  Every rule runs; every reason is kept. This is the feature, and it is
+  a separate commit from Steps 1 and 2.
+
+      pass   clean enrolment
+      pass   missing prerequisite
+      pass   over the credit cap
+      pass   section full
+      BREAK  two failures at once
+             recorded: Dana Vale could not register: / Missing prerequisite: CS101
+             now:      Dana Vale could not register: / Missing prerequisite: CS101 / Would total 20 credits, limit is 18
+
+  1 pin broken, and it is the right one.
+
+  Four cases did not move, because a case that fails one rule reports one
+  rule whether you return early or collect. Four pins passing was never
+  evidence that the change worked -- it was evidence that four of the five
+  could not tell. Only the case built to fail twice can see this change,
+  which is why Step 0 recorded it.
