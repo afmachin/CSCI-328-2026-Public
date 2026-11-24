@@ -1,0 +1,4 @@
+at Rules.seatsAvailable(Rules.java:9)
+at EligibilityRule.lambda$and$0(EligibilityRule.java:8)
+at EligibilityRule.lambda$and$0(EligibilityRule.java:7)
+at Main.main(Main.java:8)
